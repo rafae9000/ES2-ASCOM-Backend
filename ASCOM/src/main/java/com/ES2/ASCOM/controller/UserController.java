@@ -32,6 +32,11 @@ public class UserController {
 	
 	PasswordEncoder encoder;
 	
+	@GetMapping("/teste")
+	public String teste() {
+		return "Teste bem sucedidio";
+	}
+	
 	@GetMapping("/listar")
 	public Page<Usuario> listar(@PageableDefault(value = 10) Pageable pageable) {
 		Page<Usuario> lista =  userRepository.findAll(pageable);
