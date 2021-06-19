@@ -32,6 +32,27 @@ public class Usuario {
 	@Column(name="email")
 	private String email;
 	
+	@Column(name="nome")
+	private String nome;
+	
+	@Column(name="senha")
+	private String senha;
+	
+	@Column(name="profissao")
+	private String profissao;
+	
+	@Column(name="ativo")
+	private boolean ativo;
+	 
+	 @ManyToOne
+	 @JoinColumn(name="grupo_id", nullable=false) 
+	 private Grupo grupo;
+	 /* 
+	 * @OneToMany(mappedBy="usuario") private List<Chamado> chamados;
+	 * 
+	 * @OneToMany(mappedBy="usuario") private List<Clipping> clippings;
+	 */
+	
 	public Integer getId() {
 		return id;
 	}
@@ -87,26 +108,5 @@ public class Usuario {
 	public void setGrupo(Grupo grupo) {
 		this.grupo = grupo;
 	}
-
-	@Column(name="nome")
-	private String nome;
-	
-	@Column(name="senha")
-	private String senha;
-	
-	@Column(name="profissao")
-	private String profissao;
-	
-	@Column(name="ativo")
-	private boolean ativo;
-	 
-	 @ManyToOne
-	 @JoinColumn(name="grupo_id", nullable=false) 
-	 private Grupo grupo;
-	 /* 
-	 * @OneToMany(mappedBy="usuario") private List<Chamado> chamados;
-	 * 
-	 * @OneToMany(mappedBy="usuario") private List<Clipping> clippings;
-	 */
 
 }
