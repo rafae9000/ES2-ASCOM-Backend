@@ -18,41 +18,41 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor 
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "usuario", schema = "ascom")
 public class Usuario {
-	
+
 	@Id
 	@Column(name = "usuario_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
-	@Column(name="email")
+
+	@Column(name = "email")
 	private String email;
-	
-	@Column(name="nome")
+
+	@Column(name = "nome")
 	private String nome;
-	
-	@Column(name="senha")
+
+	@Column(name = "senha")
 	private String senha;
-	
-	@Column(name="profissao")
+
+	@Column(name = "profissao")
 	private String profissao;
-	
-	@Column(name="ativo")
+
+	@Column(name = "ativo")
 	private boolean ativo;
-	 
-	 @ManyToOne
-	 @JoinColumn(name="grupo_id", nullable=false) 
-	 private Grupo grupo;
-	 /* 
+
+	@ManyToOne
+	@JoinColumn(name = "grupo_id", nullable = false)
+	private Grupo grupo;
+	/*
 	 * @OneToMany(mappedBy="usuario") private List<Chamado> chamados;
 	 * 
 	 * @OneToMany(mappedBy="usuario") private List<Clipping> clippings;
 	 */
-	
+
 	public Integer getId() {
 		return id;
 	}

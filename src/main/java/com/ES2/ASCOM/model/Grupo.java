@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -26,19 +27,22 @@ public class Grupo {
 	@Column(name = "grupo_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
+
 	@Column
 	private String nome;
-	
-	@JsonIgnore
-	@OneToMany(mappedBy="grupo")
-	private List<Usuario> usuarios; 
 
 	@JsonIgnore
-	@ManyToMany
-	@JoinTable(name = "grupo_permissao", schema = "ascom",
-		joinColumns = @JoinColumn(name="grupo_id"), 
-		inverseJoinColumns = @JoinColumn(name="permissao_id")
-	)
+	@OneToMany(mappedBy = "grupo")
+	private List<Usuario> usuarios;
+
+	/*
+	 * @JsonIgnore
+	 * 
+	 * @OneToMany(mappedBy="grupo") private List<Grupo_permissao> permissoes;
+	 */
+
+	@JsonIgnore
+	@ManyToMany(mappedBy = "grupos")
 	private List<Permissao> permissoes;
+
 }

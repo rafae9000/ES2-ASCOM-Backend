@@ -22,7 +22,8 @@ public class CustomUsuarioDAO {
     }
     
     public Map<String,Object> listagemCustomizada(String nome, String email, String profissao,String ativo,
-    											  Integer grupo_id, Integer paginaAtual, Integer tamanhoPagina ){
+    											  Integer grupo_id, String ordenacao_nome, Integer paginaAtual,
+    											  Integer tamanhoPagina ){
     	
     	String query = "select user from Usuario as user ";
     	
@@ -32,6 +33,7 @@ public class CustomUsuarioDAO {
     	queryBuilder.addConditionLike("user.email", "email", email);
     	queryBuilder.addConditionLike("user.profissao", "profissao", profissao);
     	queryBuilder.addConditionEquals("user.grupo.id","grupo_id", grupo_id);
+    	queryBuilder.addConditionOrderBy("user.nome", ordenacao_nome);
     	if(ativo != null) {
     		boolean active = Boolean.parseBoolean(ativo);
     		queryBuilder.addConditionEquals("user.ativo","ativo", active);

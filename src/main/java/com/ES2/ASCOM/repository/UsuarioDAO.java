@@ -11,16 +11,11 @@ import com.ES2.ASCOM.model.Usuario;
 
 @Repository
 public interface UsuarioDAO extends JpaRepository<Usuario, Integer> {
-	
-	
-	/*@Query("SELECT user from Usuario user where user.email = :email")
-	public Optional<Usuario> findByEmail(@Param("email") String email);*/
-	
+
 	@Query("SELECT user from Usuario user where user.email = :email")
 	Optional<Usuario> findByEmail(String email);
-	
-	
+
 	@Query("Select user from Usuario user where user.grupo.id = :grupoId")
 	List<Usuario> findByGrupo(Integer grupoId);
-	
+
 }

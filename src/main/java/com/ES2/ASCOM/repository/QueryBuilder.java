@@ -13,11 +13,13 @@ public class QueryBuilder <T> {
 	private List<String> condicoes;
 	private HashMap<String, Object> values;
 	private String select;
+	private boolean orderIsUsed;
 	
 	public QueryBuilder() {
 		this.condicoes = new ArrayList<String>();
 		this.select = "";
 		this.values = new HashMap<String, Object>(); 
+		this.orderIsUsed = false;
 	}
 	
 	public void setSelect(String select) {
@@ -39,11 +41,19 @@ public class QueryBuilder <T> {
 			values.put(param, "%"+value.toString().toLowerCase()+"%");
 		}
 	}
+	//deve ser usado no final da query e apenas 1 vez
+	public void addConditionOrderBy(String field, String order) {
+		if(order == null) order = "asc";
+		String condition = String.format("order by %s %s", field, order);
+		condicoes.add(condition);
+		orderIsUsed = true;
+	}
 	
 	
 	public String build() {
 		String condicaoCompleta = " where ";
 		int tam = this.condicoes.size();
+		if(tam == 1 && orderIsUsed) condicaoCompleta = " ";
 		for(int i = 0; i <  tam - 1; i++) {
 			condicaoCompleta += this.condicoes.get(i) + " and ";
 		}
