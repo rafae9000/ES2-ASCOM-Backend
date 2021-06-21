@@ -71,10 +71,10 @@ public class UsuarioController {
 		}
 		
 		Optional<Grupo> groupAux = grupoDAO.findById(grupo_id);
-		if(groupAux.isEmpty()) throw new ApiRequestException("Grupo com id = "+grupo_id+" não existe", HttpStatus.BAD_REQUEST);
+		if(!groupAux.isPresent()) throw new ApiRequestException("Grupo com id = "+grupo_id+" não existe", HttpStatus.BAD_REQUEST);
 
 		Optional<Usuario> userAux = usuarioDAO.findById(id);
-		if (userAux.isEmpty()) throw new ApiRequestException("Usuario com id = "+id+" não existe", HttpStatus.BAD_REQUEST);
+		if (!userAux.isPresent()) throw new ApiRequestException("Usuario com id = "+id+" não existe", HttpStatus.BAD_REQUEST);
 		
 		Usuario user = userAux.get();
 		Grupo group = groupAux.get();
