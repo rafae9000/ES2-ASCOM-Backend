@@ -1,3 +1,5 @@
+
+
 /*
 
 package com.ES2.ASCOM.model;
@@ -15,8 +17,12 @@ import javax.persistence.Table;
 
 
 import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "genero_jornalistico", schema = "ascom")
 public class Genero_jornalistico {

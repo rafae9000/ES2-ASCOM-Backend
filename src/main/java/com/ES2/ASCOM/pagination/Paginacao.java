@@ -13,7 +13,7 @@ public class Paginacao<T> {
 	private static final Integer PAGINA_INICIAL = 1;
 	private static final Integer TAMANHO_DA_PAGINA = 10;
 	
-	public Map<String,Object>  paginarLista(Integer paginaAtual, Integer tamanhoPagina, List<T> lista) {
+	public Map<String,Object>  paginarLista(Integer paginaAtual, Integer tamanhoPagina, List<T> lista) throws ApiRequestException {
 		Map<String,Object> result = new HashMap<String,Object>();
 		int tamanhoLista = lista.size();
 		if(tamanhoLista == 0) {

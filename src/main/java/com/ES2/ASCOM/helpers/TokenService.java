@@ -2,6 +2,7 @@ package com.ES2.ASCOM.helpers;
 
 import java.util.Date;
 
+
 import org.springframework.http.HttpStatus;
 
 import com.ES2.ASCOM.exception.ApiRequestException;
@@ -11,8 +12,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+
 public class TokenService {
+	
 	private static final long expirationTime = 4 * 60 * 60 * 1000;
+	
 	private String key = "jf8eqmdiw0dwfrhtreh68";
 	
 	public String generateToken(Usuario user) {
@@ -36,7 +40,7 @@ public class TokenService {
 		
 	}
 	
-	public Claims validateToken(String token) {
+	public Claims validateToken(String token) throws ApiRequestException {
 		Claims claims = decodeToken(token);
 		
 		if(claims == null)
@@ -48,7 +52,7 @@ public class TokenService {
 		return claims;
 	}
 	
-	public Integer getTokenSubject(String token) {
+	public Integer getTokenSubject(String token) throws ApiRequestException {
 		Claims claims = validateToken(token);
 		Integer id = Integer.valueOf(claims.getSubject());
 		return id;

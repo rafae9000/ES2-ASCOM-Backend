@@ -7,8 +7,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import net.bytebuddy.utility.RandomString;
 
 import com.ES2.ASCOM.model.Grupo;
 import com.ES2.ASCOM.model.Permissao;
@@ -36,14 +36,13 @@ public class UsuarioController {
 	@Autowired
 	private UsuarioDAO usuarioDAO;
 	@Autowired
-	private GrupoDAO grupoDAO;
+	private GrupoDAO grupoDAO; 
 	@Autowired
 	private PermissaoDAO permissaoDAO;
 	@Autowired
 	private CustomUsuarioDAO customUsuarioDAO;
 	private TokenService tokenService = new TokenService();
-	PasswordEncoder encoder;
-
+	
 	@GetMapping("/teste")
 	public List<Permissao> teste() {
 
@@ -52,13 +51,13 @@ public class UsuarioController {
 	}
 	
 	@PutMapping("{id}/mudarDeGrupo")
-	public Map<String, String> alterarGrupo(@PathVariable Integer id ,@RequestHeader Map<String, String> header, @RequestBody Map<String, String> json) {
+	public Map<String, String> alterarGrupo(@PathVariable Integer id ,@RequestHeader Map<String, String> header, @RequestBody Map<String, String> json) throws ApiRequestException {
 		String token = header.get("token");
 		if (token == null)
 			throw new ApiRequestException("Token não foi informado", HttpStatus.BAD_REQUEST);
 
 		Integer logged_user_id = tokenService.getTokenSubject(token);
-		Usuario logged_user = usuarioDAO.findById(logged_user_id).get();
+		Usuario logged_user = usuarioDAO.findById(-1).get();
 		
 		if(!logged_user.isAtivo())
 			throw new ApiRequestException("Sua conta foi recentemente desativada pelo administrador", HttpStatus.FORBIDDEN);
@@ -87,7 +86,7 @@ public class UsuarioController {
 	}
 	
 	@PutMapping("{id}/alterarStatus")
-	public Map<String, String> alterarStatus(@PathVariable Integer id ,@RequestHeader Map<String, String> header, @RequestBody Map<String, String> json) {
+	public Map<String, String> alterarStatus(@PathVariable Integer id ,@RequestHeader Map<String, String> header, @RequestBody Map<String, String> json) throws ApiRequestException {
 		String token = header.get("token");
 		if (token == null)
 			throw new ApiRequestException("Token não foi informado", HttpStatus.BAD_REQUEST);
@@ -117,7 +116,7 @@ public class UsuarioController {
 	}
 
 	@PostMapping("/login")
-	public Map<String, String> login(@RequestBody Map<String, String> json) {
+	public Map<String, String> login(@RequestBody Map<String, String> json) throws ApiRequestException {
 		String email = json.get("email");
 		String senha = json.get("senha");
 		Optional<Usuario> user = usuarioDAO.findByEmail(email);
@@ -130,7 +129,7 @@ public class UsuarioController {
 			throw new ApiRequestException("O usuario com este email está inativo  ", HttpStatus.FORBIDDEN);
 		
 		String senha_correta = user.get().getSenha();
-		if (!senha_correta.equals(senha))
+		if (!BCrypt.checkpw(senha, senha_correta))
 			throw new ApiRequestException("Senha está incorreta", HttpStatus.FORBIDDEN);
 
 		Map<String, String> result = new HashMap<String, String>();
@@ -139,7 +138,7 @@ public class UsuarioController {
 	}
 
 	@GetMapping("/{id}")
-	public Optional<Usuario> achar(@PathVariable Integer id, @RequestHeader Map<String,String> header) {
+	public Optional<Usuario> achar(@PathVariable Integer id, @RequestHeader Map<String,String> header) throws ApiRequestException {
 		String token = header.get("token");
 		if (token == null)
 			throw new ApiRequestException("Token não foi informado", HttpStatus.BAD_REQUEST);
@@ -155,9 +154,26 @@ public class UsuarioController {
 		else throw new ApiRequestException("Usuario com id = "+id+" não existe", HttpStatus.BAD_REQUEST);
 		return user;
 	}
+	
+	@GetMapping("/meusDados")
+	public Optional<Usuario> pegarMeusDados(@RequestHeader Map<String,String> header) throws ApiRequestException {
+		String token = header.get("token");
+		if (token == null)
+			throw new ApiRequestException("Token não foi informado", HttpStatus.BAD_REQUEST);
+
+		Integer logged_user_id = tokenService.getTokenSubject(token);
+		Usuario logged_user = usuarioDAO.findById(logged_user_id).get();
+		
+		if(!logged_user.isAtivo())
+			throw new ApiRequestException("Sua conta foi recentemente desativada pelo administrador", HttpStatus.FORBIDDEN);
+		
+		Optional<Usuario> user = usuarioDAO.findById(logged_user_id);
+		user.get().setSenha(null);
+		return user;
+	}
 
 	@PutMapping("/alterarMeusDados")
-	public Map<String, String> mudarMeusDados(@RequestHeader Map<String, String> header, @RequestBody Map<String, String> json) {
+	public Map<String, String> mudarMeusDados(@RequestHeader Map<String, String> header, @RequestBody Map<String, String> json) throws ApiRequestException {
 
 		String token = header.get("token");
 		if (token == null)
@@ -187,16 +203,17 @@ public class UsuarioController {
 				throw new ApiRequestException("Já existem um usuario com email = " + email, HttpStatus.BAD_REQUEST);
 			logged_user.setEmail(email);
 		}
-
-		boolean senha_original_correta = logged_user.getSenha().equals(senha_original);
+		
+        String senha_correta = logged_user.getSenha();
 		if (senha_original != null) {
-			if (!senha_original_correta)
+			if (!BCrypt.checkpw(senha_original, senha_correta))
 				throw new ApiRequestException("A senha original está incorreta", HttpStatus.BAD_REQUEST);
 			if (senha_nova == null || senha_nova_confirmacao == null)
 				throw new ApiRequestException("Informe a nova senha e sua confirmacao", HttpStatus.BAD_REQUEST);
 			if (!senha_nova.equals(senha_nova_confirmacao))
 				throw new ApiRequestException("A nova senha e sua confirmacao são diferentes", HttpStatus.BAD_REQUEST);
-
+			
+			senha_nova =  BCrypt.hashpw(senha_nova, BCrypt.gensalt());
 			logged_user.setSenha(senha_nova);
 		} else {
 			if (senha_nova != null || senha_nova_confirmacao != null)
@@ -216,7 +233,7 @@ public class UsuarioController {
 			@RequestParam(required = false) String nome, @RequestParam(required = false) String email,
 			@RequestParam(required = false) String profissao, @RequestParam(required = false) String ativo,
 			@RequestParam(required = false) Integer grupo_id, @RequestParam(required = false) String ordenacao_nome,
-			@RequestParam(required = false) Integer paginaAtual, @RequestParam(required = false) Integer tamanhoPagina) {
+			@RequestParam(required = false) Integer paginaAtual, @RequestParam(required = false) Integer tamanhoPagina) throws ApiRequestException {
 
 		String token = header.get("token");
 		if (token == null)
@@ -247,7 +264,7 @@ public class UsuarioController {
 
 	@PostMapping("/salvar")
 	public Map<String, Integer> salvar(@RequestHeader Map<String, String> header,
-			@RequestBody Map<String, String> json) {
+			@RequestBody Map<String, String> json) throws ApiRequestException {
 
 		String token = header.get("token");
 		if (token == null)
@@ -288,7 +305,8 @@ public class UsuarioController {
 		if (usuario_email.isPresent())
 			throw new ApiRequestException("Já existem um usuario com email = " + email, HttpStatus.BAD_REQUEST);
 
-		Usuario user = new Usuario(null, email, nome, senha, profissao, true, group.get());
+		senha =  BCrypt.hashpw(senha, BCrypt.gensalt()); 
+		Usuario user = new Usuario(null, email, nome, senha, profissao, true, null, group.get());
 		user = usuarioDAO.save(user);
 		
 		Map<String, Integer> result = new HashMap<String, Integer>();
@@ -300,7 +318,28 @@ public class UsuarioController {
 		// user.setSenha(encodePassword);
 
 	}
-
+/*
+	@PostMapping("/esqueceuSenha")
+	public Map<String, String> esqueceuSenha(@RequestBody Map<String, String> json) throws ApiRequestException {
+		String email = json.get("email");
+		if (email == null) throw new ApiRequestException("Email não foi informado",HttpStatus.BAD_GATEWAY);
+		
+		Optional<Usuario> user = usuarioDAO.findByEmail(email);
+		if(!user.isPresent()) throw new ApiRequestException("Não existe usuario com este email", HttpStatus.BAD_GATEWAY);
+		
+		Usuario usuario = user.get();
+		String tokenReset = RandomString.make(45);
+		usuario.setTokenResetaSenha(tokenReset);
+		usuarioDAO.save(usuario);
+		
+		String link = "www.ascom.ufs.br/reiniciarSenha?token="+tokenReset; 
+		
+		Map<String, String> result = new HashMap<String, String>();
+		result.put("message", "Foi enviado para seu email um link para alterar sua senha");
+		
+		return result;
+	}
+	*/
 	/**
 	 * usario/ => usuario/salvar => POST usuario/login => POST usuario/alterar =>
 	 * POST usuario/listar => GET usuario/desabilitar => POST usuario/busca/{value}

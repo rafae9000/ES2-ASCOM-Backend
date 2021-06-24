@@ -1,8 +1,11 @@
-/*
+
 package com.ES2.ASCOM.model;
 
 import java.util.Date;
 import java.util.List;
+
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,15 +18,23 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.ES2.ASCOM.enums.Feedback;
 import com.ES2.ASCOM.enums.Noticia_portal_local;
-import com.ES2.ASCOM.enums.Status;
+import com.ES2.ASCOM.enums.Status_clipping;
+import com.ES2.ASCOM.enums.Status_chamado;
+import com.ES2.ASCOM.enums.Tipo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+/*
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "clipping", schema = "ascom")
 public class Clipping {
@@ -38,8 +49,16 @@ public class Clipping {
 	private Usuario usuario;
 	
 	@ManyToOne
-	@JoinColumn(name = "genero_jornalistico_id", nullable=false)
-	private Genero_jornalistico genero_jornalistico;
+	@JoinColumn(name = "usuario_atribuido_id", nullable = true)
+	private Usuario usuario_atribuido;
+	
+	@OneToOne()
+    @JoinColumn(name = "chamado_id", referencedColumnName = "chamado_id", nullable=true)
+    private Chamado chamado;
+	
+	//@ManyToOne
+	//@JoinColumn(name = "genero_jornalistico_id", nullable=false)
+	//private Genero_jornalistico genero_jornalistico;
 	
 	@Column(name = "data_publicacao")
 	private Date data_publicacao;
@@ -91,7 +110,7 @@ public class Clipping {
 	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")
-	private Status status;
+	private Status_clipping status;
 	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "feedback")
@@ -100,7 +119,7 @@ public class Clipping {
 	@Column(name = "status", nullable = true)
 	private String justificativa;
 	
-	@OneToMany(mappedBy = "clipping")
-	private List<Arquivo_clipping> arquivos;
+	//@OneToMany(mappedBy = "clipping")
+	//private List<Arquivo_clipping> arquivos;
 }
 */

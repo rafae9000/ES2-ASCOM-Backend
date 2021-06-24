@@ -2,7 +2,8 @@ package com.ES2.ASCOM.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class ApiRequestException extends RuntimeException {
+public class ApiRequestException extends Throwable {
+	
 	private HttpStatus status;
 	
 	public ApiRequestException(String message,HttpStatus status) {

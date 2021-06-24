@@ -1,4 +1,4 @@
-/*
+
 package com.ES2.ASCOM.model;
 
 import javax.persistence.Column;
@@ -10,13 +10,19 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import com.ES2.ASCOM.enums.Status;
+
+import com.ES2.ASCOM.enums.Status_chamado;
 import com.ES2.ASCOM.enums.Tipo;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+/*
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "chamado", schema = "ascom")
 public class Chamado {
@@ -27,8 +33,15 @@ public class Chamado {
 	private Integer id;
 	
 	@ManyToOne
-	@JoinColumn(name = "usuario_id", nullable = false)
+	@JoinColumn(name = "usuario_id", nullable = true)
 	private Usuario usuario;
+	
+	@ManyToOne
+	@JoinColumn(name = "usuario_atribuido_id", nullable = true)
+	private Usuario usuario_atribuido;
+	
+	@OneToOne(mappedBy = "chamado")
+    private Clipping clipping;
 	
 	@Column(name = "titulo")
 	private String titulo;
@@ -60,7 +73,7 @@ public class Chamado {
 	//aberto,fechado ou anulado
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")
-	private Status status;
+	private Status_chamado status;
 	
 	//requisicao ou incidente
 	@Enumerated(EnumType.STRING)
@@ -69,14 +82,6 @@ public class Chamado {
 	
 	@Column(name = "justificativa", nullable = true)
 	private String justificativa;
-	
-	@ManyToOne
-	@JoinColumn(name = "categoria_id", nullable = false)
-	private Categoria categoria;
-	
-	
-	
-	
 
 }
 */

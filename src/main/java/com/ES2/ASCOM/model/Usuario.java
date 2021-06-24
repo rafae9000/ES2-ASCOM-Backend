@@ -43,6 +43,9 @@ public class Usuario {
 
 	@Column(name = "ativo")
 	private boolean ativo;
+	
+	@Column(name = "token_reseta_senha", nullable = true)
+	private String tokenResetaSenha;
 
 	@ManyToOne
 	@JoinColumn(name = "grupo_id", nullable = false)
@@ -107,6 +110,14 @@ public class Usuario {
 
 	public void setGrupo(Grupo grupo) {
 		this.grupo = grupo;
+	}
+
+	public String getTokenResetaSenha() {
+		return tokenResetaSenha;
+	}
+
+	public void setTokenResetaSenha(String tokenResetaSenha) {
+		this.tokenResetaSenha = tokenResetaSenha;
 	}
 
 }

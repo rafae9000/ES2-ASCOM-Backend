@@ -7,6 +7,7 @@ import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
 
+import com.ES2.ASCOM.exception.ApiRequestException;
 import com.ES2.ASCOM.model.Usuario;
 import com.ES2.ASCOM.pagination.Paginacao;
 
@@ -23,7 +24,7 @@ public class CustomUsuarioDAO {
     
     public Map<String,Object> listagemCustomizada(String nome, String email, String profissao,String ativo,
     											  Integer grupo_id, String ordenacao_nome, Integer paginaAtual,
-    											  Integer tamanhoPagina ){
+    											  Integer tamanhoPagina ) throws ApiRequestException{
     	
     	String query = "select user from Usuario as user ";
     	

@@ -28,7 +28,7 @@ public class GrupoController {
 	private TokenService tokenService = new TokenService();
 	
 	@GetMapping("/listar")
-	public List<Grupo> listar(@RequestHeader Map<String,String> header){
+	public List<Grupo> listar(@RequestHeader Map<String,String> header) throws ApiRequestException{
 		String token = header.get("token");
 		if (token == null)
 			throw new ApiRequestException("Token não foi informado", HttpStatus.BAD_REQUEST);
