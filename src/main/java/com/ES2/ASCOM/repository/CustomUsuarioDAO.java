@@ -41,7 +41,7 @@ public class CustomUsuarioDAO {
     	}
     	
     	TypedQuery<Usuario> tQuery = queryBuilder.buildQuery(em, Usuario.class);
-    	tQuery.getResultList().forEach(usuario -> usuario.setSenha(null));
+    	//tQuery.getResultList().forEach(usuario -> usuario.setSenha(null));
     	
     	return pag.paginarLista(paginaAtual, tamanhoPagina, tQuery.getResultList());
     }

@@ -1,12 +1,21 @@
 package com.ES2.ASCOM.controller;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailSendException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +50,8 @@ public class UsuarioController {
 	private PermissaoDAO permissaoDAO;
 	@Autowired
 	private CustomUsuarioDAO customUsuarioDAO;
+	@Autowired
+	private JavaMailSender emailSender;
 	private TokenService tokenService = new TokenService();
 	
 	@GetMapping("/teste")
@@ -57,7 +68,7 @@ public class UsuarioController {
 			throw new ApiRequestException("Token não foi informado", HttpStatus.BAD_REQUEST);
 
 		Integer logged_user_id = tokenService.getTokenSubject(token);
-		Usuario logged_user = usuarioDAO.findById(-1).get();
+		Usuario logged_user = usuarioDAO.findById(logged_user_id).get();
 		
 		if(!logged_user.isAtivo())
 			throw new ApiRequestException("Sua conta foi recentemente desativada pelo administrador", HttpStatus.FORBIDDEN);
@@ -134,6 +145,7 @@ public class UsuarioController {
 
 		Map<String, String> result = new HashMap<String, String>();
 		result.put("token", tokenService.generateToken(usuario));
+		result.put("grupo", usuario.getGrupo().getNome());
 		return result;
 	}
 
@@ -318,14 +330,15 @@ public class UsuarioController {
 		// user.setSenha(encodePassword);
 
 	}
-/*
+
 	@PostMapping("/esqueceuSenha")
-	public Map<String, String> esqueceuSenha(@RequestBody Map<String, String> json) throws ApiRequestException {
+	public Map<String, String> esqueceuSenha(@RequestBody Map<String, String> json) throws ApiRequestException, UnsupportedEncodingException, MessagingException {
 		String email = json.get("email");
-		if (email == null) throw new ApiRequestException("Email não foi informado",HttpStatus.BAD_GATEWAY);
+		String url = json.get("url");
+		if (email == null) throw new ApiRequestException("Email não foi informado",HttpStatus.BAD_REQUEST);
 		
 		Optional<Usuario> user = usuarioDAO.findByEmail(email);
-		if(!user.isPresent()) throw new ApiRequestException("Não existe usuario com este email", HttpStatus.BAD_GATEWAY);
+		if(!user.isPresent()) throw new ApiRequestException("Não existe usuario com este email", HttpStatus.BAD_REQUEST);
 		
 		Usuario usuario = user.get();
 		String tokenReset = RandomString.make(45);
@@ -334,12 +347,56 @@ public class UsuarioController {
 		
 		String link = "www.ascom.ufs.br/reiniciarSenha?token="+tokenReset; 
 		
+		MimeMessage mensagem = emailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(mensagem);
+		helper.setTo(email); 
+		String assunto = "Link para reiniciar";
+		String conteudo = "<p>Olá,</p>"
+				+ "<p>Você fez uma requisicao para reiniciar sua senha</p>"
+				+ "<p>Aperte o link abaixo para mudar a sua senha</p>"
+				+ "<p><b><a href=\""+link+"\">Mudar a senha</a><b></p>";
+		
+		helper.setSubject(assunto);
+		helper.setText(conteudo,true);
+	
+		try {
+			emailSender.send(mensagem);
+		} catch (MailSendException e) {
+			throw new ApiRequestException("Ocorreu uma falha ao enviar o email de recuperação", HttpStatus.BAD_GATEWAY);
+		}
+		
 		Map<String, String> result = new HashMap<String, String>();
 		result.put("message", "Foi enviado para seu email um link para alterar sua senha");
 		
 		return result;
 	}
-	*/
+	
+	@PostMapping("/alterarSenhaEsquecida")
+	public Map<String, String> alterarSenhaEsquecida(@RequestBody Map<String, String> json) throws ApiRequestException{
+		String senha_nova = json.get("senha_nova");
+		String senha_nova_confirmacao = json.get("senha_nova_confirmacao");
+		String token_alteracao = json.get("token_alteracao");
+		
+		if(senha_nova == null) throw new ApiRequestException("Senha nova não foi informada",HttpStatus.BAD_REQUEST);
+		if(senha_nova_confirmacao == null) throw new ApiRequestException("Confirmação da senha não foi informada",HttpStatus.BAD_REQUEST);
+		if(token_alteracao == null) throw new ApiRequestException("Token de alteração não foi informado",HttpStatus.BAD_REQUEST);
+		
+		if(!senha_nova.equals(senha_nova_confirmacao)) throw new ApiRequestException("Senha nova e sua confirmação não são iguais",HttpStatus.BAD_REQUEST);
+		
+		Optional<Usuario> user = usuarioDAO.findByTokenResetaSenha(token_alteracao);
+		if(!user.isPresent())
+			throw new ApiRequestException("Esse link de alteração ja foi utilizado,caso não tenha sido você entre em contato com o suporte tecnico",HttpStatus.UNAUTHORIZED);
+		
+		Usuario usuario = user.get();
+		senha_nova =  BCrypt.hashpw(senha_nova, BCrypt.gensalt());
+		usuario.setSenha(senha_nova);
+		usuario.setTokenResetaSenha(null);
+		usuarioDAO.save(usuario);
+		
+		Map<String, String> result = new HashMap<String, String>();
+		result.put("message","Alteração da senha foi feita com sucesso");
+		return result;	
+	}
 	/**
 	 * usario/ => usuario/salvar => POST usuario/login => POST usuario/alterar =>
 	 * POST usuario/listar => GET usuario/desabilitar => POST usuario/busca/{value}

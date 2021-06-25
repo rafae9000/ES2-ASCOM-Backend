@@ -35,6 +35,7 @@ public class Usuario {
 	@Column(name = "nome")
 	private String nome;
 
+	@JsonIgnore
 	@Column(name = "senha")
 	private String senha;
 
@@ -44,6 +45,7 @@ public class Usuario {
 	@Column(name = "ativo")
 	private boolean ativo;
 	
+	@JsonIgnore
 	@Column(name = "token_reseta_senha", nullable = true)
 	private String tokenResetaSenha;
 

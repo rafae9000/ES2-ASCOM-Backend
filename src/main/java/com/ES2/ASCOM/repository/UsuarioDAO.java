@@ -14,6 +14,9 @@ public interface UsuarioDAO extends JpaRepository<Usuario, Integer> {
 
 	@Query("SELECT user from Usuario user where user.email = :email")
 	Optional<Usuario> findByEmail(String email);
+	
+	@Query("SELECT user from Usuario user where user.tokenResetaSenha = :token")
+	Optional<Usuario> findByTokenResetaSenha(String token);
 
 	@Query("Select user from Usuario user where user.grupo.id = :grupoId")
 	List<Usuario> findByGrupo(Integer grupoId);
