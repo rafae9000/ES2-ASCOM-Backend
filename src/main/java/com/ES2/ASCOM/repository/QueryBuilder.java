@@ -49,20 +49,33 @@ public class QueryBuilder <T> {
 		orderIsUsed = true;
 	}
 	
+	public void addConditionBetween(String field, String param1, Object value1, String param2, Object value2) {
+		if(value1 != null && value2 != null) {
+			String condition = String.format("%s between :%s and :%s", field, param1, param2);
+			condicoes.add(condition);
+			values.put(param1, value1);
+			values.put(param2, value2);
+		}
+	}
+	
 	
 	public String build() {
 		String condicaoCompleta = " where ";
 		int tam = this.condicoes.size();
 		if(tam == 1 && orderIsUsed) condicaoCompleta = " ";
 		for(int i = 0; i <  tam - 1; i++) {
-			condicaoCompleta += this.condicoes.get(i) + " and ";
+			if(i == tam - 2 && orderIsUsed)
+				condicaoCompleta += this.condicoes.get(i)+ " ";
+			else
+				condicaoCompleta += this.condicoes.get(i) + " and ";
 		}
 		if(tam == 0)
 			return this.select;
 		
 		condicaoCompleta += this.condicoes.get(tam-1);
 		condicaoCompleta = this.select + condicaoCompleta;
-		//System.out.println(condicaoCompleta);
+		orderIsUsed = false;
+		System.out.println(condicaoCompleta);
 		return condicaoCompleta;
 	}
 	

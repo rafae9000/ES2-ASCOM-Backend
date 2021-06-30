@@ -5,10 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import net.bytebuddy.utility.RandomString;
 
+import com.ES2.ASCOM.model.Chamado;
 import com.ES2.ASCOM.model.Grupo;
 import com.ES2.ASCOM.model.Permissao;
 import com.ES2.ASCOM.model.Usuario;
@@ -54,12 +60,8 @@ public class UsuarioController {
 	private JavaMailSender emailSender;
 	private TokenService tokenService = new TokenService();
 	
-	@GetMapping("/teste")
-	public List<Permissao> teste() {
-
-		return permissaoDAO.permissoesGrupo(2);
-		// return null;
-	}
+	private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+	private Validator validator = factory.getValidator();
 	
 	@PutMapping("{id}/mudarDeGrupo")
 	public Map<String, String> alterarGrupo(@PathVariable Integer id ,@RequestHeader Map<String, String> header, @RequestBody Map<String, String> json) throws ApiRequestException {
@@ -69,6 +71,9 @@ public class UsuarioController {
 
 		Integer logged_user_id = tokenService.getTokenSubject(token);
 		Usuario logged_user = usuarioDAO.findById(logged_user_id).get();
+		
+		if(!logged_user.getGrupo().getNome().contentEquals("administrador"))
+			throw new ApiRequestException("Somente um administrador pode mudar o grupo que um usuario pertence", HttpStatus.FORBIDDEN);
 		
 		if(!logged_user.isAtivo())
 			throw new ApiRequestException("Sua conta foi recentemente desativada pelo administrador", HttpStatus.FORBIDDEN);
@@ -107,6 +112,9 @@ public class UsuarioController {
 		
 		if(!logged_user.isAtivo())
 			throw new ApiRequestException("Sua conta foi recentemente desativada pelo administrador", HttpStatus.FORBIDDEN);
+		
+		if(!logged_user.getGrupo().getNome().contentEquals("administrador"))
+			throw new ApiRequestException("Somente um administrador pode mudar o status de um usuario", HttpStatus.FORBIDDEN);
 		
 		String ativo = json.get("ativo");
 		if (ativo == null || (!ativo.equals("true") && !ativo.equals("false")))
@@ -210,6 +218,8 @@ public class UsuarioController {
 			logged_user.setProfissao(profissao);
 
 		if (email != null && !logged_user.getEmail().equals(email)) {
+			if(!email.endsWith("@ebserh.gov.br"))
+				throw new ApiRequestException("O novo email deve pertencer ao dominio @ebserh.gov.br", HttpStatus.BAD_REQUEST);
 			Optional<Usuario> usuario_email = usuarioDAO.findByEmail(email);
 			if (usuario_email.isPresent())
 				throw new ApiRequestException("Já existem um usuario com email = " + email, HttpStatus.BAD_REQUEST);
@@ -232,6 +242,11 @@ public class UsuarioController {
 				throw new ApiRequestException(
 						"Para mudar a senha é necessario informar: a senha original, a senha nova e a confirmacao dela",
 						HttpStatus.BAD_REQUEST);
+		}
+		
+		Set<ConstraintViolation<Usuario>> violations = validator.validate(logged_user);
+		for (ConstraintViolation<Usuario> violation : violations) {
+			throw new ApiRequestException(violation.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		usuarioDAO.save(logged_user);
 		
@@ -287,6 +302,9 @@ public class UsuarioController {
 		
 		if(!logged_user.isAtivo())
 			throw new ApiRequestException("Sua conta foi recentemente desativada pelo administrador", HttpStatus.FORBIDDEN);
+		
+		if(!logged_user.getGrupo().getNome().contentEquals("administrador"))
+			throw new ApiRequestException("Somente um administrador pode criar um novo usuario", HttpStatus.FORBIDDEN);
 
 		String nome = json.get("nome");
 		String email = json.get("email");
@@ -300,14 +318,14 @@ public class UsuarioController {
 			throw new ApiRequestException("Informe um grupo_id,sendo que ele deve ser um numero inteiro positivo",
 					HttpStatus.BAD_REQUEST);
 		}
-		if (nome == null)
-			throw new ApiRequestException("Informe um nome", HttpStatus.BAD_REQUEST);
+
 		if (email == null)
 			throw new ApiRequestException("Informe um email", HttpStatus.BAD_REQUEST);
-		if (email == senha)
+		if (!email.endsWith("@ebserh.gov.br"))
+			throw new ApiRequestException("O email deve pertencer ao dominio @ebserh.gov.br", HttpStatus.BAD_REQUEST);
+		if (senha == null)
 			throw new ApiRequestException("Informe uma senha", HttpStatus.BAD_REQUEST);
-		if (profissao == null)
-			throw new ApiRequestException("Informe uma profissao", HttpStatus.BAD_REQUEST);
+
 
 		Optional<Grupo> group = grupoDAO.findById(grupo_id);
 		if (!group.isPresent())
@@ -318,7 +336,13 @@ public class UsuarioController {
 			throw new ApiRequestException("Já existem um usuario com email = " + email, HttpStatus.BAD_REQUEST);
 
 		senha =  BCrypt.hashpw(senha, BCrypt.gensalt()); 
-		Usuario user = new Usuario(null, email, nome, senha, profissao, true, null, group.get());
+		Usuario user = new Usuario(null, email, nome, senha, profissao, true, null, group.get(),null,null);
+		
+		Set<ConstraintViolation<Usuario>> violations = validator.validate(user);
+		for (ConstraintViolation<Usuario> violation : violations) {
+			throw new ApiRequestException(violation.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+		
 		user = usuarioDAO.save(user);
 		
 		Map<String, Integer> result = new HashMap<String, Integer>();

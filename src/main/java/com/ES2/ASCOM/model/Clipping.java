@@ -26,12 +26,13 @@ import com.ES2.ASCOM.enums.Noticia_portal_local;
 import com.ES2.ASCOM.enums.Status_clipping;
 import com.ES2.ASCOM.enums.Status_chamado;
 import com.ES2.ASCOM.enums.Tipo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/*
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -56,9 +57,9 @@ public class Clipping {
     @JoinColumn(name = "chamado_id", referencedColumnName = "chamado_id", nullable=true)
     private Chamado chamado;
 	
-	//@ManyToOne
-	//@JoinColumn(name = "genero_jornalistico_id", nullable=false)
-	//private Genero_jornalistico genero_jornalistico;
+	@ManyToOne
+	@JoinColumn(name = "genero_jornalistico_id", nullable=false)
+	private Genero_jornalistico genero_jornalistico;
 	
 	@Column(name = "data_publicacao")
 	private Date data_publicacao;
@@ -116,10 +117,11 @@ public class Clipping {
 	@Column(name = "feedback")
 	private Feedback feedback;
 	
-	@Column(name = "status", nullable = true)
+	@Column(name = "justificativa", nullable = true)
 	private String justificativa;
 	
-	//@OneToMany(mappedBy = "clipping")
-	//private List<Arquivo_clipping> arquivos;
+	@JsonIgnore
+	@OneToMany(mappedBy = "clipping")
+	private List<Arquivo_clipping> arquivos;
 }
-*/
+

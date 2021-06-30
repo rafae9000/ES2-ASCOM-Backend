@@ -11,6 +11,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -29,9 +32,13 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
+	@Email
+	@Size(max = 50, message = "Tamanho do email deve ser no maximo 50 caracteres")
 	@Column(name = "email")
 	private String email;
 
+	@NotBlank(message = "Nome inválido")
+	@Size(max = 50, message = "Tamanho do nome deve ser no maximo 50 caracteres")
 	@Column(name = "nome")
 	private String nome;
 
@@ -39,6 +46,8 @@ public class Usuario {
 	@Column(name = "senha")
 	private String senha;
 
+	@NotBlank(message = "Profissão inválida")
+	@Size(max = 30, message = "Tamanho da profissão deve ser no maximo 30 caracteres")
 	@Column(name = "profissao")
 	private String profissao;
 
@@ -52,11 +61,15 @@ public class Usuario {
 	@ManyToOne
 	@JoinColumn(name = "grupo_id", nullable = false)
 	private Grupo grupo;
-	/*
-	 * @OneToMany(mappedBy="usuario") private List<Chamado> chamados;
-	 * 
-	 * @OneToMany(mappedBy="usuario") private List<Clipping> clippings;
-	 */
+	
+	@JsonIgnore
+	@OneToMany(mappedBy="usuario") 
+	private List<Chamado> chamados;
+	
+	@JsonIgnore
+	@OneToMany(mappedBy="usuario") 
+	private List<Clipping> clippings;
+	 
 
 	public Integer getId() {
 		return id;
@@ -120,6 +133,22 @@ public class Usuario {
 
 	public void setTokenResetaSenha(String tokenResetaSenha) {
 		this.tokenResetaSenha = tokenResetaSenha;
+	}
+
+	public List<Chamado> getChamados() {
+		return chamados;
+	}
+
+	public void setChamados(List<Chamado> chamados) {
+		this.chamados = chamados;
+	}
+
+	public List<Clipping> getClippings() {
+		return clippings;
+	}
+
+	public void setClippings(List<Clipping> clippings) {
+		this.clippings = clippings;
 	}
 
 }

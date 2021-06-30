@@ -1,7 +1,5 @@
 
 
-/*
-
 package com.ES2.ASCOM.model;
 
 
@@ -15,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
@@ -35,7 +34,8 @@ public class Genero_jornalistico {
 	@Column(name = "nome", unique = true)
 	private String nome;
 	
+	@JsonIgnore
 	@OneToMany(mappedBy = "genero_jornalistico")
 	private List<Clipping> clippings;
 }
-*/
+
