@@ -59,7 +59,7 @@ public class Clipping {
 	
 	@ManyToOne
 	@JoinColumn(name = "genero_jornalistico_id", nullable=false)
-	private Genero_jornalistico genero_jornalistico;
+	private GeneroJornalistico genero_jornalistico;
 	
 	@Column(name = "data_publicacao")
 	private Date data_publicacao;
@@ -122,6 +122,6 @@ public class Clipping {
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "clipping")
-	private List<Arquivo_clipping> arquivos;
+	private List<ArquivoClipping> arquivos;
 }
 

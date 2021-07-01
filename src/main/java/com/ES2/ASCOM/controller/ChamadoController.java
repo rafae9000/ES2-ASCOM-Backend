@@ -219,14 +219,18 @@ public class ChamadoController {
 		
 		if(!logged_user.isAtivo())
 			throw new ApiRequestException("Sua conta foi recentemente desativada pelo administrador", HttpStatus.FORBIDDEN);
-		if(!grupo.getNome().equals("administrador") && !grupo.getNome().equals("secretario"))
-			throw new ApiRequestException("Apenas um administrador ou secretario pode avaliar um chamado", HttpStatus.FORBIDDEN);
 		
 		Optional<Chamado> aux = chamadoDAO.findById(id);
 		if(!aux.isPresent())
 			throw new ApiRequestException("Não existe um chamado com id = "+id, HttpStatus.BAD_REQUEST);
 		
 		Chamado chamado = aux.get();
+		
+		if(!grupo.getNome().equals("administrador") && !grupo.getNome().equals("secretario"))
+			throw new ApiRequestException("Apenas um administrador ou secretario pode avaliar um chamado", HttpStatus.FORBIDDEN);
+		if(!chamado.getStatus().toString().equals("aberto") && !grupo.getNome().equals("administrador"))
+			throw new ApiRequestException("Apenas um administrador pode avaliar um chamado que não está aberto", HttpStatus.FORBIDDEN);
+		
 		
 		String titulo = json.get("titulo");
 		String nome = json.get("nome");
@@ -266,7 +270,7 @@ public class ChamadoController {
 		if(justificativa.trim().isEmpty()) throw new ApiRequestException("Justificativa inválida", HttpStatus.BAD_REQUEST);
 		
 		//caso o chamado não for externo ou o usuario for um administrador, a edição dos dados podem ser feitas
-		if(chamado.getUsuario() != null || grupo.getNome().equals("administrador")) {
+		if(grupo.getNome().equals("administrador") || chamado.getUsuario() != null) {
 			chamado.setTitulo(titulo);
 			chamado.setNome(nome);
 			chamado.setSetor(setor);
@@ -314,7 +318,7 @@ public class ChamadoController {
 		Grupo grupo = logged_user.getGrupo();
 		Integer criador_chamado_id = chamado.getUsuario().getId();
 		if(!grupo.getNome().equals("administrador")) {
-			if(chamado.getUsuario_atribuido() == null)
+			if(chamado.getUsuario() == null)
 				throw new ApiRequestException("Somente um administrador pode alterar um chamado externo", HttpStatus.FORBIDDEN);
 			else if(!chamado.getStatus().toString().equals("aberto")) 
 				throw new ApiRequestException("Somente um administrador pode alterar um chamados que não estão em aberto", HttpStatus.FORBIDDEN);

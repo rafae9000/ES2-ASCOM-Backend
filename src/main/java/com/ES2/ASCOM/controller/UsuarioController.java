@@ -232,6 +232,8 @@ public class UsuarioController {
 				throw new ApiRequestException("A senha original está incorreta", HttpStatus.BAD_REQUEST);
 			if (senha_nova == null || senha_nova_confirmacao == null)
 				throw new ApiRequestException("Informe a nova senha e sua confirmacao", HttpStatus.BAD_REQUEST);
+			if(senha_nova.length() < 6)
+				throw new ApiRequestException("Tamanho minimo da senha nova deve ser de 6 caracteres", HttpStatus.BAD_REQUEST);
 			if (!senha_nova.equals(senha_nova_confirmacao))
 				throw new ApiRequestException("A nova senha e sua confirmacao são diferentes", HttpStatus.BAD_REQUEST);
 			
@@ -325,6 +327,8 @@ public class UsuarioController {
 			throw new ApiRequestException("O email deve pertencer ao dominio @ebserh.gov.br", HttpStatus.BAD_REQUEST);
 		if (senha == null)
 			throw new ApiRequestException("Informe uma senha", HttpStatus.BAD_REQUEST);
+		if(senha.length() < 6)
+			throw new ApiRequestException("Tamanho minimo da senha deve ser de 6 caracteres", HttpStatus.BAD_REQUEST);
 
 
 		Optional<Grupo> group = grupoDAO.findById(grupo_id);
@@ -402,6 +406,7 @@ public class UsuarioController {
 		String token_alteracao = json.get("token_alteracao");
 		
 		if(senha_nova == null) throw new ApiRequestException("Senha nova não foi informada",HttpStatus.BAD_REQUEST);
+		if(senha_nova.length() < 6) throw new ApiRequestException("Tamanho minimo da senha nova deve ser de 6 caracteres", HttpStatus.BAD_REQUEST);
 		if(senha_nova_confirmacao == null) throw new ApiRequestException("Confirmação da senha não foi informada",HttpStatus.BAD_REQUEST);
 		if(token_alteracao == null) throw new ApiRequestException("Token de alteração não foi informado",HttpStatus.BAD_REQUEST);
 		

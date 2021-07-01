@@ -99,7 +99,7 @@ public class Chamado {
 	@Column(name = "email")//50
 	private String email;
 	
-	@NotBlank(message = "Setor invalido")
+	@NotBlank(message = "Ramal invalido")
 	@Size(max = 50, message = "Tamanho do ramal deve ser no maximo 50 caracteres")
 	@Column(name = "ramal")//50
 	private String ramal;
