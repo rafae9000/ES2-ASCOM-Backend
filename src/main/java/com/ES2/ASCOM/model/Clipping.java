@@ -84,7 +84,8 @@ public class Clipping {
 	@Column(name = "editora")
 	private String editora;
 	
-	@Column(name = "texto_integral", columnDefinition="TEXT")
+	@Lob
+	@Column(name = "texto_integral")
 	private String texto_integral;
 	
 	@Column(name = "manteve_texto")

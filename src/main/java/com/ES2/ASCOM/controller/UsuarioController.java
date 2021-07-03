@@ -364,7 +364,6 @@ public class UsuarioController {
 		String email = json.get("email");
 		String url = json.get("url");
 		if (email == null) throw new ApiRequestException("Email não foi informado",HttpStatus.BAD_REQUEST);
-		if (url == null) throw new ApiRequestException("Url não informada",HttpStatus.BAD_REQUEST);
 		
 		Optional<Usuario> user = usuarioDAO.findByEmail(email);
 		if(!user.isPresent()) throw new ApiRequestException("Não existe usuario com este email", HttpStatus.BAD_REQUEST);
@@ -374,7 +373,7 @@ public class UsuarioController {
 		usuario.setTokenResetaSenha(tokenReset);
 		usuarioDAO.save(usuario);
 		
-		String link = url+"?token="+tokenReset; 
+		String link = "www.ascom.ufs.br/reiniciarSenha?token="+tokenReset; 
 		
 		MimeMessage mensagem = emailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(mensagem);
