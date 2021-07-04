@@ -183,19 +183,24 @@ public class ChamadoController {
 			throw new ApiRequestException("Não existe um chamado com id = "+id, HttpStatus.BAD_REQUEST);
 		
 		Chamado chamado = aux.get();
-		Integer usuario_atribuido_id;
+		Integer usuario_atribuido_id = null;
 
-		try {		
-			usuario_atribuido_id = Integer.valueOf(json.get("usuario_atribuido_id"));
+		try {	
+			String ajudante = json.get("usuario_atribuido_id");
+			if(ajudante != null)
+				usuario_atribuido_id = Integer.valueOf(json.get("usuario_atribuido_id"));
 		} catch (NumberFormatException e) {
-			throw new ApiRequestException("Id do usuario atribuido deve ser um numero inteiro positivo",HttpStatus.BAD_REQUEST);
+			throw new ApiRequestException("Id do usuario atribuido deve ser um numero inteiro positivo ou null",HttpStatus.BAD_REQUEST);
 		}
-
-		Optional<Usuario> user = usuarioDAO.findById(usuario_atribuido_id );
-		if(!user.isPresent())
-			 throw new ApiRequestException("Não existe um usuario com o id = "+usuario_atribuido_id, HttpStatus.BAD_REQUEST);
-			
-		Usuario usuario_atribuido = user.get();
+		
+		Usuario usuario_atribuido = null;
+		if(usuario_atribuido_id != null) {
+			Optional<Usuario> user = usuarioDAO.findById(usuario_atribuido_id );
+			if(!user.isPresent())
+				 throw new ApiRequestException("Não existe um usuario com o id = "+usuario_atribuido_id, HttpStatus.BAD_REQUEST);
+				
+			usuario_atribuido = user.get();
+		}
 		chamado.setUsuario_atribuido(usuario_atribuido);
 		chamadoDAO.save(chamado);
 		
