@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.validation.ConstraintViolation;
@@ -30,11 +29,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ES2.ASCOM.exception.ApiRequestException;
 import com.ES2.ASCOM.helpers.TokenService;
 import com.ES2.ASCOM.repository.ChamadoDAO;
+import com.ES2.ASCOM.repository.ClippingDAO;
 import com.ES2.ASCOM.repository.CustomChamadoDAO;
 import com.ES2.ASCOM.repository.UsuarioDAO;
 import com.ES2.ASCOM.enums.Tipo;
 import com.ES2.ASCOM.enums.Status_chamado;
 import com.ES2.ASCOM.model.Chamado;
+import com.ES2.ASCOM.model.Clipping;
 import com.ES2.ASCOM.model.Grupo;
 import com.ES2.ASCOM.model.Usuario;
 import com.ES2.ASCOM.pagination.Paginacao;
@@ -56,6 +57,8 @@ public class ChamadoController {
 	private ChamadoDAO chamadoDAO;
 	@Autowired
 	private UsuarioDAO usuarioDAO;
+	@Autowired
+	private ClippingDAO clippingDAO;
 	@Autowired
 	private CustomChamadoDAO customChamadoDAO;
 	
@@ -144,7 +147,7 @@ public class ChamadoController {
 				usuario_atribuido = user.get();	
 			}		
 		} catch (NumberFormatException e) {
-			throw new ApiRequestException("Id do usuario atribuido deve ser um numero inteiro positivo",HttpStatus.BAD_REQUEST);
+			throw new ApiRequestException("Id do usuario atribuido deve ser um numero inteiro positivo ou null",HttpStatus.BAD_REQUEST);
 		}
 
 		Status_chamado status = Status_chamado.aberto;
@@ -266,7 +269,7 @@ public class ChamadoController {
 				usuario_atribuido = user.get();	
 			}
 		} catch (NumberFormatException e) {
-			throw new ApiRequestException("Id do usuario atribuido deve ser um numero inteiro positivo",HttpStatus.BAD_REQUEST);
+			throw new ApiRequestException("Id do usuario atribuido deve ser um numero inteiro positivo ou null",HttpStatus.BAD_REQUEST);
 		}
 
 		if(tipo_enum == null) throw new ApiRequestException("Tipo deve receber requisicao ou incidente", HttpStatus.BAD_REQUEST);
@@ -353,7 +356,7 @@ public class ChamadoController {
 			if(ajudante != null)
 				usuario_atribuido_id = Integer.valueOf(json.get("usuario_atribuido_id"));
 		} catch (NumberFormatException e) {
-			throw new ApiRequestException("Id do usuario atribuido deve ser um numero inteiro positivo",HttpStatus.BAD_REQUEST);
+			throw new ApiRequestException("Id do usuario atribuido deve ser um numero inteiro positivo ou null",HttpStatus.BAD_REQUEST);
 		}
 
 		if(usuario_atribuido_id != null) {
@@ -508,7 +511,38 @@ public class ChamadoController {
 													ordenacao_data,paginaAtual, tamanhoPagina);
 	}
 	
-	public Tipo tipoValido(String texto) {
+	@GetMapping("/{id}/estaVinculadoClipping")
+	public Map<String,Object> estaVinculadoClipping (@PathVariable Integer id, @RequestHeader Map<String,String> header) throws ApiRequestException {
+		String token = header.get("token");
+		if (token == null)
+			throw new ApiRequestException("Token não foi informado", HttpStatus.BAD_REQUEST);
+
+		Integer logged_user_id = tokenService.getTokenSubject(token);
+		Usuario logged_user = usuarioDAO.findById(logged_user_id).get();
+		
+		if(!logged_user.isAtivo())
+			throw new ApiRequestException("Sua conta foi recentemente desativada pelo administrador", HttpStatus.FORBIDDEN);
+		
+		Optional<Chamado> chamadoAux = chamadoDAO.findById(id);
+		if (!chamadoAux.isPresent()) 
+			throw new ApiRequestException("Chamado com id = "+id+" não existe", HttpStatus.BAD_REQUEST);
+		
+		boolean isVinculado = false;
+		Integer idClipping = null;
+		Chamado chamado = chamadoAux.get();
+		Optional<Clipping> clippingAux = clippingDAO.findClippingBindWithChamado(chamado.getId());
+		if(clippingAux.isPresent()) {
+			isVinculado = true;
+			Clipping clipping = clippingAux.get();
+			idClipping = clipping.getId();
+		}
+		
+		Map<String,Object> result = new HashMap<String,Object>();
+		result.put("isVinculado", isVinculado);
+		result.put("id",idClipping);
+		return result;
+	}
+	private Tipo tipoValido(String texto) {
 		for(Tipo t : Tipo.values()) {
 			if(t.name().equals(texto)) {
 				return Tipo.valueOf(texto);
@@ -517,7 +551,7 @@ public class ChamadoController {
 		return null;
 	}
 	
-	public Status_chamado statusValido(String texto) {
+	private Status_chamado statusValido(String texto) {
 		for(Status_chamado s : Status_chamado.values()) {
 			if(s.name().equals(texto)) {
 				return Status_chamado.valueOf(texto);

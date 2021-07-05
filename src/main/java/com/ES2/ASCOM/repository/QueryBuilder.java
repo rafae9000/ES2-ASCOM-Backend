@@ -58,6 +58,15 @@ public class QueryBuilder <T> {
 		}
 	}
 	
+	public void addConditionIsNull(String field) {
+		String condition = String.format("%s is null", field);
+		condicoes.add(condition);
+	}
+	
+	public void addConditionIsNotNull(String field) {
+		String condition = String.format("%s is not null", field);
+		condicoes.add(condition);
+	}
 	
 	public String build() {
 		String condicaoCompleta = " where ";
@@ -75,7 +84,7 @@ public class QueryBuilder <T> {
 		condicaoCompleta += this.condicoes.get(tam-1);
 		condicaoCompleta = this.select + condicaoCompleta;
 		orderIsUsed = false;
-		System.out.println(condicaoCompleta);
+		//System.out.println(condicaoCompleta);
 		return condicaoCompleta;
 	}
 	

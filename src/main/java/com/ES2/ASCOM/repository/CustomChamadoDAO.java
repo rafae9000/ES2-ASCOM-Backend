@@ -36,13 +36,26 @@ public class CustomChamadoDAO {
     	
     	QueryBuilder<Chamado> queryBuilder = new QueryBuilder<Chamado>();
     	queryBuilder.setSelect(query);
-    	queryBuilder.addConditionLike("chamado.nome", "titulo", titulo);
+    	queryBuilder.addConditionLike("chamado.titulo", "titulo", titulo);
     	queryBuilder.addConditionLike("chamado.setor", "setor", setor);
     	queryBuilder.addConditionLike("chamado.ramal", "ramal", ramal);
     	queryBuilder.addConditionEquals("chamado.tipo","tipo", tipo);
     	queryBuilder.addConditionEquals("chamado.status","status", status);
-    	queryBuilder.addConditionEquals("chamado.usuario.id","usuarioCriadorId", usuarioCriadorId);
-    	queryBuilder.addConditionEquals("chamado.usuario_atribuido.id","usuarioAtribuidoId", usuarioAtribuidoId);
+    	
+    	if(usuarioAtribuidoId != null && usuarioAtribuidoId == 0) {
+    		queryBuilder.addConditionIsNull("chamado.usuario_atribuido.id");
+    	}
+    	else {
+    		queryBuilder.addConditionEquals("chamado.usuario_atribuido.id","usuarioAtribuidoId", usuarioAtribuidoId);
+    	}
+    	
+    	if(usuarioCriadorId != null && usuarioCriadorId == 0) {
+    		queryBuilder.addConditionIsNull("chamado.usuario.id");
+    	}
+    	else {
+    		queryBuilder.addConditionEquals("chamado.usuario.id","usuarioCriadorId", usuarioCriadorId);
+    	}
+    	
     	
     	if(data_inicial != null || data_final != null) {
     		if (data_inicial == null) data_inicial = LocalDate.parse("2021-06-01");
@@ -53,7 +66,6 @@ public class CustomChamadoDAO {
     	
     	
     	TypedQuery<Chamado> tQuery = queryBuilder.buildQuery(em, Chamado.class);
-    	//tQuery.getResultList().forEach(usuario -> usuario.setSenha(null));
     	
     	return pag.paginarLista(paginaAtual, tamanhoPagina, tQuery.getResultList());
     }
