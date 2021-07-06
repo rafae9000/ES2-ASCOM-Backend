@@ -655,8 +655,8 @@ public class ClippingController {
 			throw new ApiRequestException("Status do clipping pode ser aberto,fechado ou anulado", HttpStatus.BAD_REQUEST);
 		if(noticiaPortalLocal != null && noticiaPortalLocal_enum == null)
 			throw new ApiRequestException("Campo noticiaPortalLocal do clipping pode receber sim ou nao", HttpStatus.BAD_REQUEST);
-		if(isVinculado != null && !isVinculado.equals("null") && !isVinculado.equals("true") && !isVinculado.equals("false"))
-			throw new ApiRequestException("Campo isVinculado pode receber true,false ou null", HttpStatus.BAD_REQUEST);
+		if(isVinculado != null && !isVinculado.equals("true") && !isVinculado.equals("false"))
+			throw new ApiRequestException("Campo isVinculado pode receber true ou false", HttpStatus.BAD_REQUEST);
 		if(dataInicial != null) {
 			try {
 				data_inicial = LocalDate.parse(dataInicial);

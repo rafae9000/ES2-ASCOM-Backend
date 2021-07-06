@@ -22,4 +22,8 @@ public interface ClippingDAO extends JpaRepository<Clipping, Integer> {
 	@Query("SELECT clipping FROM Clipping clipping WHERE clipping.status = 'aberto' "
 			+ "AND clipping.usuario_atribuido.id = :usuarioId ORDER BY clipping.id")
 	List<Clipping> clippingsAbertoAtribuido(Integer usuarioId);
+	
+	@Query("SELECT clipping FROM Clipping clipping WHERE clipping.chamado IS NOT NULL")
+	List<Clipping> findBindedClippings();
+	
 }

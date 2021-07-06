@@ -88,13 +88,15 @@ public class Clipping {
 	private String manteve_subtitulo;
 	
 	@NotBlank(message = "Campo manteve subtitulo inválido")
-	@Size(max = 50, message = "Tamanho do campo manteve subtitulo deve ser no maximo 50 caracteres")
+	@Size(max = 100, message = "Tamanho do campo manteve subtitulo deve ser no maximo 100 caracteres")
 	@Column(name = "editora")
 	private String editora;
 	
+	@NotBlank(message = "Texto integral inválido")
 	@Column(name = "texto_integral",columnDefinition="TEXT")
 	private String texto_integral;
 	
+	@NotBlank(message = "Campo manteve texto integral inválido")
 	@Column(name = "manteve_texto",columnDefinition="TEXT")
 	private String manteve_texto;
 	
@@ -123,7 +125,8 @@ public class Clipping {
 	@Column(name = "url")
 	private String url;
 	
-	@Column(name = "observacoes")
+	@NotBlank(message = "Observacoes inválido")
+	@Column(name = "observacoes", columnDefinition="TEXT")
 	private String observacoes;
 	
 	@Enumerated(EnumType.STRING)

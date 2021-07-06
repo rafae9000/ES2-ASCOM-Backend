@@ -68,6 +68,16 @@ public class QueryBuilder <T> {
 		condicoes.add(condition);
 	}
 	
+	public void addConditionNotIn(String field, String param, Object value) {
+		if(value != null) {
+			String condition = String.format("%s not in :%s", field, param);
+			condicoes.add(condition);
+			values.put(param, value);
+		}
+	}
+	
+	
+	
 	public String build() {
 		String condicaoCompleta = " where ";
 		int tam = this.condicoes.size();
@@ -84,7 +94,7 @@ public class QueryBuilder <T> {
 		condicaoCompleta += this.condicoes.get(tam-1);
 		condicaoCompleta = this.select + condicaoCompleta;
 		orderIsUsed = false;
-		//System.out.println(condicaoCompleta);
+		System.out.println(condicaoCompleta);
 		return condicaoCompleta;
 	}
 	

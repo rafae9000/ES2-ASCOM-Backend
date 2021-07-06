@@ -462,6 +462,7 @@ public class ChamadoController {
 												@RequestParam(required = false) String ramal,
 												@RequestParam(required = false) String tipo, 
 												@RequestParam(required = false) String status,
+												@RequestParam(required = false) String isVinculado,
 												@RequestParam(required = false) String dataInicial, 
 												@RequestParam(required = false) String dataFinal,
 												@RequestParam(required = false) String ordenacao_data,
@@ -487,6 +488,8 @@ public class ChamadoController {
 			throw new ApiRequestException("Tipo do chamado podem ser requisicao ou incidente", HttpStatus.BAD_REQUEST);
 		if(status != null && status_enum == null)
 			throw new ApiRequestException("Status do chamado podem ser aberto,solucionado ou anulado", HttpStatus.BAD_REQUEST);	
+		if(isVinculado != null && !isVinculado.equals("true") && !isVinculado.equals("false"))
+			throw new ApiRequestException("Campo isVinculado pode receber true ou false", HttpStatus.BAD_REQUEST);
 		if(dataInicial != null) {
 			try {
 				data_inicial = LocalDate.parse(dataInicial);
@@ -507,7 +510,7 @@ public class ChamadoController {
 			throw new ApiRequestException("Ordenação por data pode receber asc ou desc", HttpStatus.BAD_REQUEST);	
 			
 		return customChamadoDAO.listagemCustomizada(usuarioCriadorId, usuarioAtribuidoId, titulo, setor, 
-													ramal, tipo_enum, status_enum , data_inicial, data_final, 
+													ramal, tipo_enum, status_enum, isVinculado, data_inicial, data_final, 
 													ordenacao_data,paginaAtual, tamanhoPagina);
 	}
 	
