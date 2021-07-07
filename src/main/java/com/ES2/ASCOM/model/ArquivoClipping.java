@@ -40,7 +40,7 @@ public class ArquivoClipping {
 	private String nome;
 	
 	@Column(name = "tamanho")
-	private Integer tamanho;
+	private Integer tamanhoBytes;
 
 }
 
