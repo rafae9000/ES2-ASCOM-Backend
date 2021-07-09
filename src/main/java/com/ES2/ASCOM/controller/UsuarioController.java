@@ -42,12 +42,15 @@ import com.ES2.ASCOM.repository.GrupoDAO;
 import com.ES2.ASCOM.repository.PermissaoDAO;
 import com.ES2.ASCOM.repository.UsuarioDAO;
 import com.ES2.ASCOM.exception.ApiRequestException;
+import com.ES2.ASCOM.helpers.Authentication;
 import com.ES2.ASCOM.helpers.TokenService;
 
 @RestController
 @RequestMapping("/usuario")
 public class UsuarioController {
 
+	@Autowired
+	private Authentication authentication;
 	@Autowired
 	private UsuarioDAO usuarioDAO;
 	@Autowired
@@ -62,6 +65,29 @@ public class UsuarioController {
 	
 	private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 	private Validator validator = factory.getValidator();
+	
+	@GetMapping("/emailJaUsado")
+	public Map<String,Boolean> emailJaUsado(@RequestHeader Map<String, String> header, @RequestParam String email, 
+											@RequestParam Boolean considerarMeuEmail) throws ApiRequestException{
+		
+		Usuario logged_user = authentication.authenticateUser(header.get("token"));
+		Map<String, Boolean> result = new HashMap<String, Boolean>();
+		
+		if(!considerarMeuEmail && logged_user.getEmail().equals(email)) {
+			result.put("isUsed", false);
+		}
+		else {
+			Optional<Usuario> usuario_email = usuarioDAO.findByEmail(email);
+			if (usuario_email.isPresent()) {
+				result.put("isUsed", true);
+			}
+			else {
+				result.put("isUsed", false);
+			}
+		}
+		
+		return result;
+	}
 	
 	@PutMapping("{id}/mudarDeGrupo")
 	public Map<String, String> alterarGrupo(@PathVariable Integer id ,@RequestHeader Map<String, String> header, @RequestBody Map<String, String> json) throws ApiRequestException {

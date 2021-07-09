@@ -46,14 +46,9 @@ public class GeneroJornalisticoController {
 	private final Paginacao<GeneroJornalistico> pag = new Paginacao<GeneroJornalistico>();
 	
 	@GetMapping("/generoJaExiste")
-	public Map<String,Boolean> generoJaExiste(@RequestHeader Map<String,String> header, @RequestBody Map<String,String> json) throws ApiRequestException{
+	public Map<String,Boolean> generoJaExiste(@RequestHeader Map<String,String> header,@RequestParam String nomeGenero) throws ApiRequestException{
 		
 		Usuario logged_user = authentication.authenticateUser(header.get("token"));
-		
-		String nomeGenero = json.get("nomeGenero");
-		if(nomeGenero == null)
-			throw new ApiRequestException("Informe o nome do gênero jornalistico", HttpStatus.BAD_REQUEST);
-		
 		Boolean exists;
 		
 		Optional<GeneroJornalistico> aux = generoJornalisticoDAO.findByNome(nomeGenero);
@@ -69,14 +64,9 @@ public class GeneroJornalisticoController {
 	}
 	
 	@GetMapping("/generoEstaSendoUsado")
-	public Map<String,Boolean> generoEstaSendoUsado(@RequestHeader Map<String,String> header, @RequestBody Map<String,String> json) throws ApiRequestException{
+	public Map<String,Boolean> generoEstaSendoUsado(@RequestHeader Map<String,String> header, @RequestParam String nomeGenero) throws ApiRequestException{
 		
 		Usuario logged_user = authentication.authenticateUser(header.get("token"));
-		
-		String nomeGenero = json.get("nomeGenero");
-		if(nomeGenero == null)
-			throw new ApiRequestException("Informe o nome do gênero jornalistico", HttpStatus.BAD_REQUEST);
-		
 		Boolean isUsed;
 		
 		Optional<GeneroJornalistico> aux = generoJornalisticoDAO.findByNome(nomeGenero);
@@ -108,7 +98,7 @@ public class GeneroJornalisticoController {
 		String nomeGenero = json.get("nomeGenero");
 		this.isNomeValido(nomeGenero);
 		
-		Map<String,Boolean> map = this.generoJaExiste(header, json);
+		Map<String,Boolean> map = this.generoJaExiste(header, nomeGenero);
 		Boolean exists = map.get("exists");
 		if(exists)
 			throw new ApiRequestException("Gênero jornalistico com este nome ja existe", HttpStatus.BAD_REQUEST);
@@ -132,7 +122,7 @@ public class GeneroJornalisticoController {
 		String nomeGenero = json.get("nomeGenero");
 		this.isNomeValido(nomeGenero);
 		
-		Map<String,Boolean> map = this.generoJaExiste(header, json);
+		Map<String,Boolean> map = this.generoJaExiste(header, nomeGenero);
 		Boolean exists = map.get("exists");
 		if(exists)
 			throw new ApiRequestException("Gênero jornalistico com este nome ja existe", HttpStatus.BAD_REQUEST);
@@ -163,10 +153,8 @@ public class GeneroJornalisticoController {
 			throw new ApiRequestException("Gênero jornalistico com id = "+id+" não existe", HttpStatus.BAD_REQUEST);
 		
 		GeneroJornalistico genero = generoAux.get();
-		Map<String,String> map1 = new HashMap<String,String>();
-		map1.put("nomeGenero", genero.getNome());
 		
-		Map<String,Boolean> map2 = this.generoEstaSendoUsado(header, map1);
+		Map<String,Boolean> map2 = this.generoEstaSendoUsado(header, genero.getNome());
 		Boolean isUsed = map2.get("isUsed");
 		if(isUsed)
 			throw new ApiRequestException("Esse gênero jornalistico ja esta sendo utilizado em um clipping,portanto não pode ser excluido", 
