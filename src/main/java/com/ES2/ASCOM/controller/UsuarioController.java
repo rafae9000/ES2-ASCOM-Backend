@@ -66,6 +66,21 @@ public class UsuarioController {
 	private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 	private Validator validator = factory.getValidator();
 	
+	@GetMapping("/tokenResetaSenhaValido")
+	public Map<String,Boolean> tokenResetaSenhaValido(@RequestParam String tokenResetaSenha) throws ApiRequestException{
+		
+		Map<String, Boolean> result = new HashMap<String, Boolean>();
+		Optional<Usuario> user = usuarioDAO.findByTokenResetaSenha(tokenResetaSenha);
+		
+		if(user.isPresent()) {
+			result.put("isValid",true);
+		}
+		else {
+			result.put("isValid",false);
+		}
+		return result;
+	}
+	
 	@GetMapping("/emailJaUsado")
 	public Map<String,Boolean> emailJaUsado(@RequestHeader Map<String, String> header, @RequestParam String email, 
 											@RequestParam Boolean considerarMeuEmail) throws ApiRequestException{
